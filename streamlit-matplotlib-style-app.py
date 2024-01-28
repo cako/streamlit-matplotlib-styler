@@ -84,10 +84,16 @@ def main():
             )
         else:
             select_options = get_keys_options()
+            write_to = st
+            widget_is_picker = False
+            if "color" in param:
+                cola, colb = st.columns([1, 1])
+                widget_is_picker = cola.toggle("Name/Picker")
+                write_to = colb
             widget_desc = RCHelper.get_input_widget_description(
-                param, select_options=select_options
+                param, select_options=select_options, widget_is_picker=widget_is_picker
             )
-            value = getattr(st, widget_desc["widget"])(
+            value = getattr(write_to, widget_desc["widget"])(
                 *widget_desc["args"], **widget_desc["kwargs"]
             )
         # Some parameters are not converted properly, they must be fixed
@@ -102,9 +108,7 @@ def main():
             DFHelper.insert(st.session_state["df"], param, value)
 
         # UI: Dataframe editor
-        df_edit = st.data_editor(
-            st.session_state["df"], num_rows="dynamic", use_container_width=True
-        )
+        df_edit = st.data_editor(st.session_state["df"], num_rows="dynamic")
         # Check that all keys exist
         for key in df_edit.index:
             if key not in st.session_state["rc"].keys():

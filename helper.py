@@ -12,12 +12,7 @@ class InputsDict(TypedDict):
     kwargs: dict
 
 
-# @st.cache_data
-def get_named_colors_mapping():
-    return mcolors.get_named_colors_mapping()
-
-
-COLORS = get_named_colors_mapping()
+COLORS = sorted(mcolors.get_named_colors_mapping().keys())
 
 
 class DFHelper:
@@ -64,6 +59,7 @@ class RCHelper:
         key: str,
         rc: Optional[RcParams] = None,
         select_options: Optional[dict[str, list]] = None,
+        widget_is_picker: bool = True,
     ) -> InputsDict:
         if rc is None:
             rc = rcParamsDefault
@@ -85,17 +81,16 @@ class RCHelper:
                 key=key,
             )
         elif "color" in key:
-            if val is None:
-                color_hex = None
-            elif val in COLORS:
-                color_hex = COLORS[val]
-            elif val.startswith("#"):
-                color_hex = val
+            if widget_is_picker:
+                color_hex = None if val is None else mcolors.to_hex(val)
+                widget = "color_picker"
+                args = ("Pick a color",)
+                kwargs = dict(value=color_hex, label_visibility="collapsed", key=key)
             else:
-                color_hex = None
-            widget = "color_picker"
-            args = ("Pick a color",)
-            kwargs = dict(value=color_hex, label_visibility="visible", key=key)
+                index = COLORS.index(key) if key in COLORS else None
+                widget = "selectbox"
+                args = ("Select a color", COLORS)
+                kwargs = dict(index=index, label_visibility="collapsed", key=key)
         elif isinstance(val, bool):
             widget = "toggle"
             args = ("Off/On",)
