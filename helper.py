@@ -1,6 +1,7 @@
 from io import BytesIO
 from typing import Optional, TypedDict
 
+import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib import RcParams, rcParamsDefault
 from matplotlib import colors as mcolors
@@ -70,6 +71,11 @@ class RCHelper:
             widget = "selectbox"
             args = ("Value" if key is None else key, select_options[key])
             kwargs = dict(label_visibility="collapsed", key=key)
+        elif "cmap" in key:
+            index = COLORS.index(key) if key in plt.colormaps() else None
+            widget = "selectbox"
+            args = ("Select a colormap", plt.colormaps())
+            kwargs = dict(index=index, label_visibility="collapsed", key=key)
         elif "linewidth" in key:
             widget = "slider"
             args = ("Value" if key is None else key,)
