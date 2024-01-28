@@ -1,0 +1,16 @@
+# conda env update --name streamlitenv --file environment.yml --prune
+name: streamlitenv
+dependencies:
+  - python=3.11
+  - pip=23.3.1
+  # Requirements
+  - matplotlib=3.8.0
+  - pandas=2.1.4
+  # Streamlit
+  - conda-forge::streamlit=1.30.0
+  # Dev
+  - conda-forge::types-pillow
+  - conda-forge::pandas-stubs
+  - pip:
+    - streamlit_js_eval==0.1.5
+    
