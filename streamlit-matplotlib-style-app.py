@@ -40,6 +40,7 @@ def get_keys_options():
 
 
 def main():
+    # Decrease whitespace at the top of the document.
     st.markdown(
         """
             <style>
@@ -47,14 +48,14 @@ def main():
                     padding-top: {padding_top}rem;
                     padding-bottom: {padding_bottom}rem;
                     }}
-            </style>""".format(padding_top=2, padding_bottom=2),
+            </style>""".format(padding_top=1, padding_bottom=1),
         unsafe_allow_html=True,
     )
-    # UI: SIDEBAR
     col_sidebar, col_content = st.columns([1, 3])
 
-    # State vars
+    # UI: Sidebar
     with col_sidebar:
+        # UI: Header
         st.markdown(
             "<h2 style='text-align: center; margin: 0px;'>Style Editor</h2>",
             unsafe_allow_html=True,
@@ -89,12 +90,13 @@ def main():
             value = getattr(st, widget_desc["widget"])(
                 *widget_desc["args"], **widget_desc["kwargs"]
             )
+        # Some parameters are not converted properly, they must be fixed
         value = RCHelper.fix_string(param, value)
+
         # UI: Persist button
         addme = st.button(
             "Persist change", use_container_width=True, disabled=param is None
         )
-        # )
         if addme and value is not None and param is not None:
             RCHelper.insert(st.session_state["rc"], param, value)
             DFHelper.insert(st.session_state["df"], param, value)
@@ -119,11 +121,12 @@ def main():
                 else st.session_state["rc_default"][key]
             )
             RCHelper.insert(st.session_state["rc"], key, val)
-        # st.session_state["df"] = df_edit
+        # st.session_state["df"] = df_edit # Not sure if this is required or not
 
         # UI: Download button
+        enable_download = not st.session_state["df"].empty
         contents = BytesIO()
-        if not st.session_state["df"].empty:
+        if enable_download:
             RCHelper.write_binary(st.session_state["rc"], out=contents)
         st.download_button(
             "Download",
@@ -131,14 +134,14 @@ def main():
             file_name="rcParams.mplstyle",
             mime="text/csv",
             use_container_width=True,
-            disabled=st.session_state["df"].empty,
+            disabled=not enable_download,
         )
 
-    # UI: CONTENT
+    # UI: Plots
     with col_content:
         rc_tmp = st.session_state["rc"].copy()
         if value is not None and param is not None:
-            rc_tmp[param] = value
+            RCHelper.insert(rc_tmp, param, value)
         figwidth_px = streamlit_js_eval(js_expressions="screen.width", want_output=True)
         if figwidth_px is None:
             figwidth_px = 1000
@@ -152,6 +155,7 @@ if __name__ == "__main__":
     im = Image.open("./static/sphx_glr_logos2_002.png")
     st.set_page_config(page_title="Matplotlib Styles", layout="wide", page_icon=im)
 
+    # Store state variables
     if "rc_default" not in st.session_state:
         st.session_state["rc_default"] = RCHelper.default()
     if "rc" not in st.session_state:
@@ -160,11 +164,5 @@ if __name__ == "__main__":
         st.session_state["df"] = DFHelper.empty()
     if "rckeys" not in st.session_state:
         st.session_state["rckeys"] = RCHelper.get_sorted_keys(st.session_state["rc"])
-    if "content" not in st.session_state:
-        st.session_state["content"] = BytesIO()
-        if "contentnbytes" not in st.session_state:
-            st.session_state["contentnbytes"] = (
-                st.session_state["content"].getbuffer().nbytes
-            )
 
     main()
