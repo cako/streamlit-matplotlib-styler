@@ -39,7 +39,7 @@ class RCHelper:
 
     @staticmethod
     def get_sorted_keys(rc: RcParams) -> list[str]:
-        return sorted(list(rc.keys()))
+        return sorted([k for k in rc.keys() if not k.startswith("_")])
 
     @staticmethod
     def insert(rc: RcParams, key, val):

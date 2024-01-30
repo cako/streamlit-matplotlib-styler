@@ -22,6 +22,8 @@ def get_keys_options():
                 vals = re.findall(r"^.*\{(.*)\}.*$", s[1], re.UNICODE)
                 if len(vals) > 0:
                     key = re.sub(r"^(\#*)(.*?)$", r"\2", s[0], flags=re.UNICODE).strip()
+                    if key.startswith("_"):
+                        continue
                     options[key] = [v.strip() for v in vals[0].split(",")]
     options["legend.loc"] = [
         "best",
