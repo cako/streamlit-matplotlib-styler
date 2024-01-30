@@ -73,11 +73,11 @@ def main():
 
         # UI: rcParam selector
         param = st.selectbox(
-            "rcParam",
+            "Edit an rcParam",
             st.session_state["rckeys"],
             index=None,
-            placeholder="Choose an rcParam",
-            label_visibility="collapsed",
+            placeholder="e.g., axes.grid",
+            label_visibility="visible",
         )
         if param is None:
             value = st.text_input(
