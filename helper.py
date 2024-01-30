@@ -39,7 +39,17 @@ class RCHelper:
 
     @staticmethod
     def get_sorted_keys(rc: RcParams) -> list[str]:
-        return sorted([k for k in rc.keys() if not k.startswith("_")])
+        return sorted(
+            [
+                k
+                for k in rc.keys()
+                if not (
+                    k.startswith("_")
+                    or k.startswith("figure.hooks")
+                    or k.startswith("path.effects")
+                )
+            ]
+        )
 
     @staticmethod
     def insert(rc: RcParams, key, val):
@@ -50,7 +60,12 @@ class RCHelper:
         if (
             key is not None
             and val is not None
-            and ("figure.figsize" in key or "axes.formatter.limits" in key)
+            and (
+                "figure.figsize" in key
+                or "axes.formatter.limits" in key
+                or "lines.dashdot_pattern" in key
+                or "lines.dotted_pattern" in key
+            )
         ):
             val = val.replace("[", "").replace("]", "")
         return val
@@ -67,10 +82,18 @@ class RCHelper:
         val = None if key is None else rc[key]
         args: tuple
         kwargs: dict
+        if key == "lines.dash_capstyle" or key == "lines.solid_capstyle":
+            val = val.value  # Convert enum
         if select_options is not None and key in select_options.keys():
             widget = "selectbox"
             args = ("Value" if key is None else key, select_options[key])
-            kwargs = dict(label_visibility="collapsed", key=key)
+            if val in select_options[key]:
+                index = select_options[key].index(val)
+            elif str(val) in select_options[key]:
+                index = select_options[key].index(str(val))
+            else:
+                index = 0
+            kwargs = dict(label_visibility="collapsed", index=index, key=key)
         elif "cmap" in key:
             index = COLORS.index(key) if key in plt.colormaps() else None
             widget = "selectbox"
@@ -86,25 +109,41 @@ class RCHelper:
                 label_visibility="collapsed",
                 key=key,
             )
-        elif "color" in key:
+        elif "alpha" in key:
+            widget = "slider"
+            args = ("Value" if key is None else key,)
+            kwargs = dict(
+                value=float(val),
+                min_value=0.0,
+                max_value=1.0,
+                label_visibility="collapsed",
+                key=key,
+            )
+        elif (
+            "color" in key
+            and "patch.force_edgecolor" not in key
+            and "pcolor" not in key
+            and "pdf.inheritcolor" not in key
+        ):
             if widget_is_picker:
                 color_hex = "none" if val is None else mcolors.to_hex(val)
                 widget = "color_picker"
                 args = ("Pick a color",)
                 kwargs = dict(value=color_hex, label_visibility="collapsed", key=key)
             else:
-                index = COLORS.index(key) if key in COLORS else COLORS.index("none")
                 widget = "selectbox"
-                args = (
-                    "Select a color",
-                    COLORS + ["auto"] if key == "axes.titlecolor" else COLORS,
-                )
+                colors = COLORS
+                if key == "axes.titlecolor":
+                    colors += ["auto"]
+                elif key == "legend.facecolor":
+                    colors += ["inherit"]
+                index = colors.index(key) if key in colors else colors.index("none")
+                args = ("Select a color", colors)
                 kwargs = dict(index=index, label_visibility="collapsed", key=key)
         elif isinstance(val, bool):
             widget = "toggle"
             args = ("Off/On",)
             kwargs = dict(value=bool(val), label_visibility="visible", key=key)
-
         else:
             widget = "text_input"
             args = ("Value" if key is None else key,)

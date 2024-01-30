@@ -4,7 +4,7 @@ from io import BytesIO
 
 import matplotlib.pyplot as plt
 import streamlit as st
-from matplotlib import matplotlib_fname
+from matplotlib import markers, matplotlib_fname
 from PIL import Image
 from streamlit_js_eval import streamlit_js_eval
 
@@ -25,7 +25,85 @@ def get_keys_options():
                     if key.startswith("_"):
                         continue
                     options[key] = [v.strip() for v in vals[0].split(",")]
+                for i in range(2, len(s)):
+                    vals = re.findall(r"^.*\{(.*)\}.*$", s[i], re.UNICODE)
+                    if len(vals) > 0:
+                        options[key] += [v.strip() for v in vals[0].split(",")]
+    options["axes.autolimit_mode"] = ["data", "round_numbers"]
     options["axes.axisbelow"] = [True, "line", False]
+    for key in ["axes.titlelocation", "xaxis.labellocation", "xtick.alignment"]:
+        options[key] = ["center", "left", "right"]
+    for key in ["yaxis.labellocation"]:
+        options[key] = ["bottom", "top", "center"]
+    for key in ["xtick.direction", "ytick.direction"]:
+        options[key] = ["in", "out", "inout"]
+    options["ytick.alignment"] = [
+        "bottom",
+        "baseline",
+        "center",
+        "center_baseline",
+        "top",
+    ]
+
+    options["font.stretch"] = [
+        "ultra-condensed",
+        "extra-condensed",
+        "condensed",
+        "semi-condensed",
+        "normal",
+        "semi-expanded",
+        "expanded",
+        "extra-expanded",
+        "ultra-expanded",
+        "wider",
+        "narrower",
+    ]
+    # options["patch.force_edgecolor"] = [True, False, None]
+    options["font.variant"] = ["normal", "small-caps"]
+    options["image.interpolation"] = [
+        "antialiased",
+        "nearest",
+        "bilinear",
+        "bicubic",
+        "spline16",
+        "spline36",
+        "hanning",
+        "hamming",
+        "hermite",
+        "kaiser",
+        "quadric",
+        "catrom",
+        "gaussian",
+        "bessel",
+        "mitchell",
+        "sinc",
+        "lanczos",
+        None,
+        "none",
+    ]
+    for key in [
+        "boxplot.flierprops.marker",
+        "boxplot.meanprops.marker",
+        "lines.marker",
+        "scatter.marker",
+    ]:
+        options[key] = list(markers.MarkerStyle.markers.keys())
+    for key in [
+        "axes.labelweight",
+        "axes.titleweight",
+        "figure.labelweight",
+        "figure.titleweight",
+        "font.weight",
+    ]:
+        options[key] = [
+            "light",
+            "normal",
+            "medium",
+            "semibold",
+            "bold",
+            "black",
+            None,
+        ]
     options["axes.grid.axis"] = ["both", "x", "y"]
     options["legend.loc"] = [
         "best",
@@ -40,6 +118,8 @@ def get_keys_options():
         "upper center",
         "center",
     ]
+    options["pcolor.shading"] = ["auto", "flat", "nearest", "gouraud"]
+    options["text.hinting"] = ["default", "no_autohint", "force_autohint", "no_hinting"]
     return options
 
 
@@ -90,7 +170,12 @@ def main():
             select_options = get_keys_options()
             write_to = st
             widget_is_picker = False
-            if "color" in param:
+            if (
+                "color" in param
+                and "patch.force_edgecolor" not in param
+                and "pcolor" not in param
+                and "pdf.inheritcolor" not in param
+            ):
                 cola, colb = st.columns([1, 1])
                 widget_is_picker = cola.toggle("Name/Picker")
                 write_to = colb
