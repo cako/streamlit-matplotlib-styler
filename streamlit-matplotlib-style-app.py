@@ -25,6 +25,8 @@ def get_keys_options():
                     if key.startswith("_"):
                         continue
                     options[key] = [v.strip() for v in vals[0].split(",")]
+    options["axes.axisbelow"] = [True, "line", False]
+    options["axes.grid.axis"] = ["both", "x", "y"]
     options["legend.loc"] = [
         "best",
         "upper right",
