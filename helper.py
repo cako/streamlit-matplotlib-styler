@@ -88,14 +88,17 @@ class RCHelper:
             )
         elif "color" in key:
             if widget_is_picker:
-                color_hex = None if val is None else mcolors.to_hex(val)
+                color_hex = "none" if val is None else mcolors.to_hex(val)
                 widget = "color_picker"
                 args = ("Pick a color",)
                 kwargs = dict(value=color_hex, label_visibility="collapsed", key=key)
             else:
-                index = COLORS.index(key) if key in COLORS else None
+                index = COLORS.index(key) if key in COLORS else COLORS.index("none")
                 widget = "selectbox"
-                args = ("Select a color", COLORS)
+                args = (
+                    "Select a color",
+                    COLORS + ["auto"] if key == "axes.titlecolor" else COLORS,
+                )
                 kwargs = dict(index=index, label_visibility="collapsed", key=key)
         elif isinstance(val, bool):
             widget = "toggle"
