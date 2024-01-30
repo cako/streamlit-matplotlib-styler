@@ -13,7 +13,7 @@ class InputsDict(TypedDict):
     kwargs: dict
 
 
-COLORS = sorted(mcolors.get_named_colors_mapping().keys())
+COLORS = sorted(mcolors.get_named_colors_mapping().keys()) + ["none"]
 
 
 class DFHelper:
