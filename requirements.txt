@@ -1,4 +1,4 @@
-pip==23.3.1
+pip==25.2
 # Requirements
 matplotlib==3.8.0
 pandas==2.1.4
